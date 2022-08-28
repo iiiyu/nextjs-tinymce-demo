@@ -1,34 +1,125 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Self hosted TinyMCE 6.x in NextJS 12.x - Javascript version
 
-## Getting Started
-
-First, run the development server:
+## Create NextJS Project
 
 ```bash
-npm run dev
-# or
-yarn dev
+yarn create next-app
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+<!-- more -->
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+This article is very subjective. If you do not feel comfortable viewing it, please close it as soon as possible.
+If you think my article can help you, you can subscribe to this site by using [RSS](https://iiiyu.com/atom.xml).
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+## Install TinyMCE latest version
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+```bash
+yarn add tinymce @tinymce/tinymce-react copy-webpack-plugin
+```
 
-## Learn More
+## Copy TinyMCE files to public folder as self hosted
 
-To learn more about Next.js, take a look at the following resources:
+Copy static files(tinymce files) to public folder. Edit file `next.config.js`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```javascript
+/** @type {import('next').NextConfig} */
+const path = require("path");
+const CopyPlugin = require("copy-webpack-plugin");
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+const nextConfig = {
+  reactStrictMode: true,
+  swcMinify: true,
+  future: {
+    webpack5: true,
+  },
+  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+    config.plugins.push(
+      new CopyPlugin({
+        patterns: [
+          {
+            from: path.join(__dirname, "node_modules/tinymce"),
+            to: path.join(__dirname, "public/assets/libs/tinymce"),
+          },
+        ],
+      })
+    );
+    return config;
+  },
+  webpackDevMiddleware: (config) => {
+    return config;
+  },
+};
 
-## Deploy on Vercel
+module.exports = nextConfig;
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Create the editor component
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Create the file `components/editor/CustomEditor.jsx`
+
+```javascript
+import { Editor } from "@tinymce/tinymce-react";
+import React, { useRef } from "react";
+
+export function CustomEditor(props) {
+  const editorRef = useRef(null);
+  const log = () => {
+    if (editorRef.current) {
+      console.log(editorRef.current.getContent());
+    }
+  };
+  return (
+    <Editor
+      tinymceScriptSrc={"/assets/libs/tinymce/tinymce.min.js"}
+      onInit={(evt, editor) => (editorRef.current = editor)}
+      value={props.content}
+      init={{
+        height: 500,
+        menubar: true,
+        plugins: [
+          "advlist",
+          "autolink",
+          "lists",
+          "link",
+          "image",
+          "charmap",
+          "preview",
+          "anchor",
+          "searchreplace",
+          "visualblocks",
+          "code",
+          "fullscreen",
+          "insertdatetime",
+          "media",
+          "table",
+          "code",
+          "help",
+          "wordcount",
+        ],
+        toolbar:
+          "undo redo | blocks | " +
+          "bold italic forecolor | alignleft aligncenter " +
+          "alignright alignjustify | bullist numlist outdent indent | " +
+          "removeformat | help",
+        content_style:
+          "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+      }}
+      onEditorChange={props.handleOnEditorChange}
+    />
+  );
+}
+```
+
+## Done
+
+![](https://s2.loli.net/2022/08/28/Us1EyN2njPd6Zcl.png)
+
+[Demo](https://github.com/iiiyu/nextjs-tinymce-demo)
+
+## Referrals
+
+Photo by <a href="https://unsplash.com/@mylifeasaryan_?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Aryan Dhiman</a> on <a href="https://unsplash.com/s/photos/keyboard?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>
+
+[NextJs- React - Self hosted TinyMCE](https://gist.github.com/zhangshine/00607fa3fe89195ef0a0e88983174b37#file-tinymce-react-nextjs-md)
+
+[Hosting the TinyMCE package with the React framework](https://www.tiny.cloud/docs/tinymce/6/react-pm-host/)
