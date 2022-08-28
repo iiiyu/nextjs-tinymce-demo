@@ -9,9 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@tinymce/tinymce-react": "^4.2.0",
+    "copy-webpack-plugin": "^11.0.0",
     "next": "12.2.5",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "tinymce": "^6.1.2"
   },
   "devDependencies": {
     "eslint": "8.23.0",
